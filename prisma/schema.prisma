@@ -1,0 +1,154 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  BUYER
+  SELLER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+model User {
+  id            String         @id @default(uuid())
+  name          String?
+  email         String         @unique
+  password      String // Hashed password
+  role          Role           @default(BUYER)
+  avatar        String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  sellerProfile SellerProfile?
+  reviews       Review[]
+  orders        Order[]
+  wishlist      Wishlist[]
+  cart          Cart?
+}
+
+model SellerProfile {
+  id          String    @id @default(uuid())
+  userId      String    @unique
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio         String?
+  companyName String?
+  verified    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  products    Product[]
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  products    Product[]
+}
+
+model Product {
+  id            String        @id @default(uuid())
+  title         String
+  slug          String        @unique
+  description   String
+  price         Decimal       @db.Decimal(10, 2)
+  promptContent String // AES-256 encrypted prompt body
+  model         String // GPT, Claude, Gemini, Midjourney, etc.
+  thumbnail     String?
+  rating        Float         @default(0.0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  categoryId    String
+  category      Category      @relation(fields: [categoryId], references: [id])
+  sellerId      String
+  seller        SellerProfile @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  
+  images        ProductImage[]
+  reviews       Review[]
+  orderItems    OrderItem[]
+  wishlistItems Wishlist[]
+  cartItems     CartItem[]
+}
+
+model ProductImage {
+  id        String  @id @default(uuid())
+  url       String
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int // 1 to 5 stars
+  comment   String?
+  createdAt DateTime @default(now())
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int      @default(1)
+
+  @@unique([cartId, productId])
+}
+
+model Order {
+  id            String      @id @default(uuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  totalPrice    Decimal     @db.Decimal(10, 2)
+  status        OrderStatus @default(PENDING)
+  paymentIntent String?     // Mock transaction reference
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  price     Decimal @db.Decimal(10, 2) // Snapshotted price at checkout
+}
+
+model Wishlist {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}

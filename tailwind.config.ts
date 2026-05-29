@@ -1,0 +1,80 @@
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  content: [
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        "surface-bright": "#3a3939",
+        "surface-container": "#201f1f",
+        "on-secondary": "#002e6a",
+        "background": "#131313",
+        "secondary": "#adc6ff",
+        "primary-container": "#000000",
+        "inverse-primary": "#5e5e5e",
+        "surface-dim": "#131313",
+        "surface-variant": "#353534",
+        "outline": "#988e90",
+        "on-tertiary-container": "#9c49eb",
+        "on-primary-fixed": "#1b1b1b",
+        "primary": "#c6c6c6",
+        "surface-container-highest": "#353534",
+        "tertiary-fixed-dim": "#ddb7ff",
+        "tertiary-fixed": "#f0dbff",
+        "inverse-surface": "#e5e2e1",
+        "on-primary-container": "#757575",
+        "surface": "#131313",
+        "surface-container-high": "#2a2a2a",
+        "on-secondary-fixed-variant": "#004395",
+        "primary-fixed": "#e2e2e2",
+        "on-tertiary-fixed-variant": "#6900b3",
+        "error": "#ffb4ab",
+        "primary-fixed-dim": "#c6c6c6",
+        "inverse-on-surface": "#313030",
+        "on-tertiary": "#490080",
+        "secondary-fixed-dim": "#adc6ff",
+        "secondary-container": "#0566d9",
+        "on-error-container": "#ffdad6",
+        "surface-container-lowest": "#0e0e0e",
+        "on-primary-fixed-variant": "#474747",
+        "surface-tint": "#c6c6c6",
+        "tertiary": "#ddb7ff",
+        "tertiary-container": "#000000",
+        "on-tertiary-fixed": "#2c0051",
+        "on-secondary-container": "#e6ecff",
+        "secondary-fixed": "#d8e2ff",
+        "on-surface-variant": "#cfc4c5",
+        "on-background": "#e5e2e1",
+        "on-primary": "#303030",
+        "outline-variant": "#4c4546",
+        "on-surface": "#e5e2e1",
+        "on-error": "#690005",
+        "surface-container-low": "#1c1b1b",
+        "error-container": "#93000a",
+        "on-secondary-fixed": "#001a42"
+      },
+      borderRadius: {
+        "DEFAULT": "0.25rem",
+        "lg": "0.5rem",
+        "xl": "0.75rem",
+        "full": "9999px"
+      },
+      spacing: {
+        "gutter": "24px",
+        "sm": "1rem",
+        "margin": "32px",
+        "md": "1.5rem",
+        "xs": "0.5rem",
+        "lg": "2rem",
+        "xl": "3rem",
+        "base": "4px"
+      }
+    },
+  },
+  plugins: [],
+};
+export default config;
