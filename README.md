@@ -2,6 +2,8 @@
 
 **CodeCrate** is a state-of-the-art, production-ready full-stack web application designed as a marketplace for student, developer, and AI enthusiast prompt architectures. Built with **Next.js 14 (App Router)**, **TypeScript**, **Prisma ORM**, **Tailwind CSS**, **Zustand**, and **NextAuth.js**, it incorporates a custom obsidian-themed glassmorphism interface ("Futuristic Developer Forge") and advanced cryptographic asset protection.
 
+This branch introduces a complete **Admin Role System**, **Moderator Control Center**, **Edge Middleware Security Guards**, and robust **Responsive Sign Out Flow**.
+
 ---
 
 ## 🚀 Key Features
@@ -10,14 +12,20 @@
 - **AES-256-CBC Encryption**: All prompt contents are encrypted before writing to the PostgreSQL database, isolating prompts from public view.
 - **Secure Vault Decryption Gate**: Purchased prompt contents are decrypted dynamically at request time strictly inside the secure `/api/vault/[id]` gateway after order verification.
 
-### 💼 Dual-Role Command Center
-- **Buyer Workflow**: Browse catalog, filters search queries, manages Zustand carts, mock invoicing checkouts, and copy purchased templates from their personal digital Vault.
-- **Seller Workspace**: Access simplified sales analytics (sales count, invoices registered, net revenues), manage active catalog listings, and publish prompts via verified CRUD forms.
-- **Creator Enrollment**: Easily transition from BUYER to SELLER atomically in a single database transaction, updating NextAuth active sessions dynamically.
+### 💼 Triple-Role Command Centers
+- **Buyer Workflow**: Browse catalog, filter search queries, manage Zustand carts, checkout mock invoices, and copy purchased templates from their personal digital Vault.
+- **Seller Workspace**: Access sales analytics (sales count, invoices registered, net revenues), manage active catalog listings, and publish prompts via verified CRUD forms.
+- **Admin Control Terminal**: A premium central moderator node featuring:
+  - **Marketplace Analytics**: High-fidelity dashboard widgets compiling total registered users, verified creators, catalog volume, total checkout revenue, and dynamic user growth.
+  - **User Management**: Prompts control to promote/demote credentials atomically (Buyer <-> Seller <-> Admin), suspend/unsuspend accounts, and delete records.
+  - **Creator Profile Audits**: View profiles, toggle the "Verified Creator" badge, or reject applications (demotes user back to standard buyer).
+  - **Asset Moderation**: Quick-filter listing queues by state ("Flagged", "Archived"), toggle prompt visibility parameters, and hard-delete inappropriate uploads.
+  - **System Monitor Feed**: Chronological timelines tracking recent registrations, checkout orders, and template uploads.
 
-### 🌐 Marketplace & Discovery
-- **Server-Side Filters**: Custom query limiters based on SQL keywords, AI model engine types, category slugs, and price ceilings.
-- **High-Fidelity UI**: Obsidian design base (`#000000`), glassmorphic panels, glowing neon boundary borders, responsive navigation menus, and delivery timeline trackers.
+### 🌐 Navigation & Responsive Sign Out
+- **Sleek Desktop Dropdown**: User Profile header toggles a premium glass menu containing identity tags, contextual panels links, and colorful role badges (Buyer = Blue, Seller = Purple, Admin = Amber Gold).
+- **Mobile Navigation Drawer**: Responsive hamburger button triggers an elegant slide-over drawer overlay supporting full navigation routes.
+- **Zustand-Clearing Sign Out**: Interactive "Sign Out" callbacks atomically terminate NextAuth sessions, purge persistent global Zustand cart stores, and route clients back to `/`.
 
 ---
 
@@ -29,7 +37,7 @@
 * **State Management**: Zustand (Global shopping cart store)
 * **Database & ORM**: PostgreSQL & Prisma Client (v5.11.0)
 * **Authentication**: NextAuth.js (Credentials Provider with Bcrypt password hashing)
-* **Security & Cryptography**: AES-256-CBC (Node `crypto` engine) & Bcrypt
+* **Security & Cryptography**: AES-256-CBC (Node `crypto` engine), Bcrypt, and Edge-Level Middleware
 
 ---
 
@@ -38,22 +46,27 @@
 ```mermaid
 graph TD
     User([Browser Client]) -->|Auth Request| NextAuth[NextAuth Middleware]
-    User -->|Queries| Explore[Marketplace Catalog API]
-    User -->|Checkout| Checkout[Checkout API Transaction]
+    User -->|Explore / Search| Explore[Marketplace Catalog API]
+    User -->|Checkout Cart| Checkout[Checkout API Transaction]
     User -->|Decrypt Request| VaultGate[api/vault/:id Route Handler]
+    Admin([System Admin]) -->|Admin Commands| AdminAPI[api/admin/* Controllers]
 
-    Explore -->|Read Listing info| DB[(PostgreSQL Database)]
+    NextAuth -->|Interceptors Guard /admin & /api/admin| AdminAPI
+    Explore -->|Read Listing info where archived = false| DB[(PostgreSQL Database)]
     Checkout -->|Atomic Write Orders| DB
     VaultGate -->|Verify Purchase| DB
     VaultGate -->|Decrypt Cipher| CryptEngine[AES-256 Crypt Engine]
+    AdminAPI -->|Moderation Writes| DB
     
     DB -->|Encrypted Blob| VaultGate
     CryptEngine -->|Clear text Prompt| User
+    DB -->|General Schema Records| AdminAPI
 ```
 
 * **Parametrized Inputs**: Full resistance to SQL Injection is natively enforced via Prisma ORM parameterized database interfaces.
 * **XSS Defended**: Dynamic inputs are safely escaped in React virtual DOM JSX nodes.
 * **Encrypted Payload Isolation**: Raw prompt data is never fetched or returned by standard catalog list queries.
+* **Unified Route Guardians**: Standard Next.js `middleware.ts` decodes JWT sessions at the edge to block unauthorized buyers or sellers from entering `/admin` or executing `/api/admin/*` transactions.
 
 ---
 
@@ -85,13 +98,13 @@ npm install
 ```
 
 ### 2. Set Up Database Schema
-Instantiate the tables and apply relations to your PostgreSQL instance:
+Instantiate the tables, columns, and custom indices on your PostgreSQL instance:
 ```bash
 npx prisma db push
 ```
 
-### 3. Seed Mock Catalog Assets
-Inject seeded categories, hashed profiles, mock creator listings, and encrypted templates:
+### 3. Seed Mock Catalog Assets & Admin account
+Inject seeded categories, hashed profiles, mock creator listings, and **system administrator credentials**:
 ```bash
 node prisma/seed.js
 ```
@@ -105,6 +118,18 @@ Open [**http://localhost:3000**](http://localhost:3000) inside your web browser.
 
 ---
 
+## 🔑 Pre-Seeded Verification Accounts
+
+Use the following credentials to audit the role-based navigation shells:
+
+| Identity | Email | Password | Role Badge | Interface Scopes |
+| :--- | :--- | :--- | :--- | :--- |
+| **System Admin** | `admin@codecrate.com` | `password123` | `ADMIN` (Gold) | Users panel, sellers verify, prompt archives, timeline timelines. |
+| **Active Creator**| `alex@codecrate.ai` | `password123` | `SELLER` (Purple) | Seller Panel, listings CRUD templates, secure database writing. |
+| **Standard Buyer**| `jane@codecrate.ai` | `password123` | `BUYER` (Blue) | Catalog shopping, vault decryption keys, payment invoice records. |
+
+---
+
 ## 🧪 Production Verification & Building
 
 Prior to deploying to production containers, run quality compile checks:
@@ -113,7 +138,10 @@ Prior to deploying to production containers, run quality compile checks:
 # 1. TypeScript Validation
 npx tsc --noEmit
 
-# 2. Production Optimized Bundle Creation
+# 2. Linting Audits
+npm run lint
+
+# 3. Production Optimized Bundle Creation
 npm run build
 ```
 
