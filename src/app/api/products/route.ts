@@ -25,7 +25,10 @@ export async function GET(req: Request) {
     const model = searchParams.get("model") || "";
     const maxPrice = searchParams.get("maxPrice") ? Number(searchParams.get("maxPrice")) : null;
 
-    const where: any = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: any = {
+      archived: false
+    };
 
     if (q) {
       where.OR = [

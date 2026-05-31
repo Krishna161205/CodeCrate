@@ -26,6 +26,7 @@ model User {
   password      String // Hashed password
   role          Role           @default(BUYER)
   avatar        String?
+  suspended     Boolean        @default(false)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   
@@ -67,6 +68,8 @@ model Product {
   model         String // GPT, Claude, Gemini, Midjourney, etc.
   thumbnail     String?
   rating        Float         @default(0.0)
+  reported      Boolean       @default(false)
+  archived      Boolean       @default(false)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   

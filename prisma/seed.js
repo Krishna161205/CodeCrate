@@ -92,6 +92,16 @@ async function main() {
     },
   });
 
+  const adminUser = await prisma.user.create({
+    data: {
+      name: "System Admin",
+      email: "admin@codecrate.com",
+      password: hashedPassword,
+      role: "ADMIN",
+      avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=AdminCrate",
+    },
+  });
+
   console.log("Seed users created.");
 
   // 4. Create Seller Profile for Alex

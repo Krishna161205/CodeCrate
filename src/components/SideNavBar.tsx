@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { Home, Store, FolderHeart, Settings, LayoutDashboard, PlusCircle, LogOut } from "lucide-react";
+import { Home, Store, FolderHeart, Settings, LayoutDashboard, PlusCircle, LogOut, ShieldCheck } from "lucide-react";
 import Image from "next/image";
+import useCartStore from "@/store/useCartStore";
 
 export default function SideNavBar() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const isSeller = session?.user?.role === "SELLER";
+  const isAdmin = session?.user?.role === "ADMIN";
 
   const navItems = [
     { label: "Home", href: "/", icon: Home },
@@ -18,10 +20,33 @@ export default function SideNavBar() {
     { label: "Settings", href: "/settings", icon: Settings },
   ];
 
-  if (isSeller) {
-    // Insert Seller Dashboard right before Settings
+  if (isSeller || isAdmin) {
+    // Insert Seller Panel right before Settings
     navItems.splice(3, 0, { label: "Seller Panel", href: "/seller", icon: LayoutDashboard });
   }
+
+  if (isAdmin) {
+    // Insert Admin Panel right before Seller Panel
+    navItems.splice(3, 0, { label: "Admin Panel", href: "/admin", icon: ShieldCheck });
+  }
+
+  const handleLogout = async () => {
+    // Clear Zustand cart
+    useCartStore.getState().clearCart();
+    // Sign out session and redirect to homepage "/"
+    await signOut({ callbackUrl: "/" });
+  };
+
+  const getRoleBadgeStyle = (role: string) => {
+    switch (role) {
+      case "ADMIN":
+        return "bg-amber-500/10 text-amber-400 border border-amber-500/20";
+      case "SELLER":
+        return "bg-purple-500/10 text-purple-400 border border-purple-500/20";
+      default:
+        return "bg-blue-500/10 text-blue-400 border border-blue-500/20";
+    }
+  };
 
   return (
     <aside className="hidden md:flex flex-col h-full p-md bg-surface-container-lowest border-r border-white/10 w-64 z-50 shrink-0">
@@ -58,7 +83,7 @@ export default function SideNavBar() {
 
       {/* Bottom Profile and Controls */}
       <div className="mt-auto pt-md border-t border-white/5 space-y-md">
-        {isSeller && (
+        {(isSeller || isAdmin) && (
           <Link
             href="/seller?tab=new"
             className="w-full bg-secondary hover:bg-secondary/90 text-on-secondary font-bold py-sm rounded-lg flex items-center justify-center gap-xs active:scale-95 duration-150 transition-all cursor-pointer"
@@ -83,16 +108,14 @@ export default function SideNavBar() {
               </div>
               <div className="overflow-hidden">
                 <p className="font-bold text-on-surface text-sm truncate">{session.user.name || "Developer"}</p>
-                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
-                  isSeller ? "bg-purple-500/10 text-purple-400 border border-purple-500/20" : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
-                }`}>
+                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${getRoleBadgeStyle(session.user.role)}`}>
                   {session.user.role || "BUYER"}
                 </span>
               </div>
             </div>
             
             <button
-              onClick={() => signOut({ callbackUrl: "/auth" })}
+              onClick={handleLogout}
               className="w-full flex items-center gap-sm px-sm py-xs text-xs text-error hover:text-red-400 hover:bg-red-500/5 rounded transition-colors"
             >
               <LogOut className="w-4 h-4" />
