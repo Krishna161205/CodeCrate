@@ -1,4 +1,4 @@
-# CodeCrate - Premium AI Prompt & Workflow Marketplace
+# CodeCrate - AI Prompt & Workflow Marketplace
 
 **CodeCrate** is a state-of-the-art, production-ready full-stack web application designed as a marketplace for student, developer, and AI enthusiast prompt architectures. Built with **Next.js 14 (App Router)**, **TypeScript**, **Prisma ORM**, **Tailwind CSS**, **Zustand**, and **NextAuth.js**, it incorporates a custom obsidian-themed glassmorphism interface ("Futuristic Developer Forge") and advanced cryptographic asset protection.
 
